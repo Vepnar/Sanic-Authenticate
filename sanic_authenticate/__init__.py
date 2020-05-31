@@ -12,6 +12,7 @@ from mongoengine import (
 )
 
 APP = None
+MODEL = None
 
 BAD_PASSWORDS = [
     'pass',
@@ -24,19 +25,25 @@ BAD_PASSWORDS = [
     '321'
 ]
 
-
-def initialize(app):
-    global APP
+def initialize(app , model=None):
+    global APP, MODEL
+    
     APP = app
 
+    # Set usermodel as default model
+    if model is None:
+        class UserModel(Document):
+            """Basic user database model with roles"""
+            name = StringField(required=True, unique=True, max_length=32)
+            password = BinaryField(required=True, max_length=60)
+            created = DateTimeField(default=datetime.utcnow)
+            last_login = DateTimeField(default=datetime.utcnow)
+            role = ListField(StringField())
+        MODEL = UserModel
 
-class UserModel(Document):
-    """Basic user database model with roles"""
-    name = StringField(required=True, unique=True, max_length=32)
-    password = BinaryField(required=True, max_length=60)
-    created = DateTimeField(default=datetime.utcnow)
-    last_login = DateTimeField(default=datetime.utcnow)
-    role = ListField(StringField())
+    else:
+        MODEL = model
+
 
 async def login(request, user):
     """Login an user with an user object"""
@@ -79,7 +86,7 @@ async def authenticate(request, username, password):
     Note:
         This task is heavy on the cpu because it hashes the password with bcrypt.
     """
-    users = UserModel.objects(name__exact=username)
+    users = MODEL.objects(name__exact=username)
     if not users:  # Return no user when there is no matching username address
         return
     print("NOTHING FOUND")
@@ -155,7 +162,7 @@ async def create_user(username, password):
 
     password = password.encode('utf-8')
     password = bcrypt.hashpw(password, bcrypt.gensalt(12))
-    user = UserModel(name=username, password=password)
+    user = MODEL(name=username, password=password)
     user.save()
     return user
 
@@ -171,7 +178,7 @@ async def user_exists(name):
         User: when there is an user found.
 
     """
-    user = UserModel.objects(name__iexact=name)
+    user = MODEL.objects(name__iexact=name)
     if user:
         return user[0]
     return None
@@ -184,11 +191,11 @@ async def get_by_id(id):
         id: mongodb object id.
 
     Return:
-        user: usermodel from the database.
+        user: MODEL from the database.
         None: when the id is invalid or when there is nothing found.
     """
     try:
-        user = UserModel.objects(id__exact=id)
+        user = MODEL.objects(id__exact=id)
         if user:
             return user[0]
     except:
