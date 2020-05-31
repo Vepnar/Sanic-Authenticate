@@ -52,6 +52,7 @@ async def login(request, user):
         return False
 
     session['user_id'] = user.id
+    session['_renew'] = 1
     return True
 
 async def check_password(user, password):
@@ -107,6 +108,7 @@ async def logout(request):
 
     if session.get('user_id'):
         del session['user_id']
+        session['_renew'] = 1
 
     return response.redirect
 
