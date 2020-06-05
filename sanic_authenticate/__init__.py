@@ -90,7 +90,6 @@ async def authenticate(request, username, password):
     users = MODEL.objects(name__exact=username)
     if not users:  # Return no user when there is no matching username address
         return
-    print("NOTHING FOUND")
 
     users = users[0]
     if await check_password(users, password):
@@ -301,7 +300,6 @@ def login_required(function, denied_function=None):
             return response.redirect(APP.config.AUTH_LOGIN_ENDPOINT)
 
         # Check if session exists.
-        print(request.get('session'))
         session = request.get('session')
         if not request.get('session'):
             return await access_denied()
