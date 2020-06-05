@@ -133,6 +133,15 @@ async def update_password(user, password, old_password=None):
 
 
 async def add_role(user, roles):
+    """Add a role to a user when the user doesn't have a role yet
+
+    Args:
+        user: (UserModel)
+        roles: (str/list) filled with roles you want to add
+
+    Returns:
+        None
+    """
     if isinstance(roles, str):
         roles = [roles]
 
@@ -145,8 +154,8 @@ async def remove_role(user, roles):
     """Remove on or more roles from a given user.
 
     Args:
-        user: the user we should remove the roles from.
-        roles: A string or list filled with roles that should be removed.
+        user: (UserModel) the user we should remove the roles from.
+        roles: (str/list) A string or list filled with roles that should be removed.
     """
 
     if isinstance(roles, str):
