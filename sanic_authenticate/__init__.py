@@ -109,12 +109,21 @@ async def logout(request):
         del session['user_id']
         session['_renew'] = 1
 
-    return response.redirect
-
 
 async def update_password(user, password, old_password=None):
+    """Update the the password of the given user.
+
+    Args:
+        user: (UserModel)
+        password: (str)
+        old_password: (str) (optional)
+
+    Returns:
+        True: when the password is updated.
+        False: when the old passsword doesn't match the new one.
+    """
     if old_password:
-        if not user.check_password(old_password):
+        if not await check_password(user, old_password):
             return False
 
     password_bytes = password.encode('utf-8')
